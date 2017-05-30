@@ -2,20 +2,15 @@
 
 namespace spec\ParkStreet\Feed;
 
-use ParkStreet\Feed\Psr7StreamFeed;
+use ParkStreet\Feed\JsonFeed;
 use PhpSpec\ObjectBehavior;
 use Psr\Http\Message\StreamInterface;
 
-class Psr7StreamFeedSpec extends ObjectBehavior
+class JsonFeedSpec extends ObjectBehavior
 {
-    function let(StreamInterface $stream)
-    {
-        $this->beConstructedWith($stream);
-    }
-
     function it_is_initializable()
     {
-        $this->shouldHaveType(Psr7StreamFeed::class);
+        $this->shouldHaveType(JsonFeed::class);
     }
 
     function it_is_a_feed()
@@ -37,7 +32,7 @@ class Psr7StreamFeedSpec extends ObjectBehavior
 JSON
 );
 
-        $this->process()->shouldReturn([
+        $this->process($stream)->shouldReturn([
             [
                 'unit_id' => 1,
             ],

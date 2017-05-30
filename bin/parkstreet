@@ -3,13 +3,11 @@
 
 require __DIR__.'/../vendor/autoload.php';
 
-$feed = new \ParkStreet\Feed\Psr7StreamFeed(
-    new \GuzzleHttp\Psr7\LazyOpenStream(
-        __DIR__.'/../testdata.json', 'r'
-    )
-);
+$feed = new \ParkStreet\Feed\JsonFeed();
 
-$data = $feed->process();
+$data = $feed->process(new \GuzzleHttp\Psr7\LazyOpenStream(
+    __DIR__.'/../testdata.json', 'r'
+));
 
 $n = print_r($data, true);
 

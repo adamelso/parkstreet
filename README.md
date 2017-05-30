@@ -26,8 +26,8 @@ API
 
 Interface: `ParkStreet\Feed`
 
-Feeds will return the metric data in an array format from any source.
+Feeds will return the metric data in an array format from a PSR-7 stream.
 
- * __`ParkStreet\Feed\Psr7Feed`__
+ * __`ParkStreet\Feed\JsonFeed`__
 
-  Decodes JSON from the body of any PSR-7 compatible feed.
+  Decodes JSON from the body of the stream feed.
