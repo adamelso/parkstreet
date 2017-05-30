@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__.'/../vendor/autoload.php';
+
+$feed = new \ParkStreet\Feed\Psr7StreamFeed(
+    new \GuzzleHttp\Psr7\LazyOpenStream(
+        __DIR__.'/../testdata.json', 'r'
+    )
+);
+
+$data = $feed->process();
+
+$n = print_r($data, true);
+
+echo $n;
