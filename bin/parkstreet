@@ -3,12 +3,18 @@
 
 require __DIR__.'/../vendor/autoload.php';
 
-$feed = new \ParkStreet\Feed\JsonFeed();
+$config = new \GeneratedHydrator\Configuration(\ParkStreet\Model\Unit::class);
 
-$data = $feed->process(new \GuzzleHttp\Psr7\LazyOpenStream(
-    __DIR__.'/../testdata.json', 'r'
-));
+$config->setGeneratedClassesTargetDir(__DIR__.'/../cache/hydrator');
+$hydrator = $config->createFactory()->getHydratorClass();
 
-$n = print_r($data, true);
+$import = new \ParkStreet\Import(
+    new \ParkStreet\Client\OfflineClient(),
+    new \ParkStreet\Feed\JsonFeed(),
+    new \ParkStreet\Factory\UnitFactory(),
+    new $hydrator
+);
 
-echo $n;
+foreach ($import->run() as $unit) {
+    var_dump($unit);
+}
