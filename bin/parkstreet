@@ -1,18 +1,24 @@
 #!/usr/bin/env php
 <?php
 
+use ParkStreet\Console\Cli;
+use ParkStreet\Console\Command;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Console\Input\ArgvInput;
+
 require __DIR__.'/../vendor/autoload.php';
 
-/** @var \Psr\Container\ContainerInterface $container */
+/** @var ContainerInterface $container */
 $container = require __DIR__.'/../config/container.php';
 
-$import = new \ParkStreet\Import(
-    new \ParkStreet\Client\OfflineClient(),
-    new \ParkStreet\Feed\JsonFeed(),
-    new \ParkStreet\MetricPipeline(),
-    $container->get('doctrine.object_manager')
-);
+$cli = new Cli($container);
 
-foreach ($import->run() as $unit) {
-    printf('Unit %d was imported.'.PHP_EOL, $unit->getUnitId());
+$commands = $container->get('commands');
+
+/** @var Command $command */
+foreach ($commands as $command) {
+    $command->setContainer($container);
+    $cli->add($command);
 }
+
+$cli->run(new ArgvInput());

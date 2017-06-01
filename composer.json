@@ -29,6 +29,9 @@
     "config": {
         "bin-dir": "bin"
     },
+    "bin": [
+        "bin/parkstreet"
+    ],
     "autoload": {
         "psr-4": {
             "ParkStreet\\": "src"

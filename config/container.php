@@ -4,8 +4,12 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Repository\DefaultRepositoryFactory;
 use Doctrine\ORM\Tools\Setup;
+use ParkStreet\Console\Command\ImportCommand;
+use ParkStreet\Import;
 use ParkStreet\Model\Unit;
 use Pimple\Container;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 $container = new Container();
 
@@ -39,9 +43,31 @@ $container['repository.unit'] = (function (Container $c) {
     return $factory->getRepository($c['doctrine.object_manager'], Unit::class);
 });
 
+
+$container['import'] = (function (Container $c) {
+    // Set other collaborators as services.
+    return new Import(
+        new \ParkStreet\Client\OfflineClient(),
+        new \ParkStreet\Feed\JsonFeed(),
+        new \ParkStreet\MetricPipeline(),
+        $c['doctrine.object_manager']
+    );
+});
+
+$container['command.import'] = (function () {
+    return new ImportCommand();
+});
+
+$container['commands'] = (function (Container $c) {
+    return [
+        $c['command.import'],
+    ];
+});
+
+
 // Pimple is not yet PSR-11 compliant because of method name collision in Silex, so this
 // anonymous class wraps PSR-11 compatibility around the Pimple container.
-return new class ($container) implements \Psr\Container\ContainerInterface {
+return new class ($container) implements ContainerInterface {
 
     /**
      * @var Container
@@ -58,7 +84,7 @@ return new class ($container) implements \Psr\Container\ContainerInterface {
      *
      * @param string $id Identifier of the entry to look for.
      *
-     * @throws \Psr\Container\NotFoundExceptionInterface  No entry was found for **this** identifier.
+     * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
      * @throws \Psr\Container\ContainerExceptionInterface Error while retrieving the entry.
      *
      * @return mixed Entry.
@@ -69,7 +95,7 @@ return new class ($container) implements \Psr\Container\ContainerInterface {
             return $this->container[$id];
         }
 
-        throw new class ("Service '{$id}' not found") implements \Psr\Container\NotFoundExceptionInterface {};
+        throw new class ("Service '{$id}' not found") implements NotFoundExceptionInterface {};
     }
 
     /**
