@@ -3,18 +3,16 @@
 
 require __DIR__.'/../vendor/autoload.php';
 
-$config = new \GeneratedHydrator\Configuration(\ParkStreet\Model\Unit::class);
-
-$config->setGeneratedClassesTargetDir(__DIR__.'/../cache/hydrator');
-$hydrator = $config->createFactory()->getHydratorClass();
+/** @var \Psr\Container\ContainerInterface $container */
+$container = require __DIR__.'/../config/container.php';
 
 $import = new \ParkStreet\Import(
     new \ParkStreet\Client\OfflineClient(),
     new \ParkStreet\Feed\JsonFeed(),
-    new \ParkStreet\Factory\UnitFactory(),
-    new $hydrator
+    new \ParkStreet\MetricPipeline(),
+    $container->get('doctrine.object_manager')
 );
 
 foreach ($import->run() as $unit) {
-    var_dump($unit);
+    printf('Unit %d was imported.'.PHP_EOL, $unit->getUnitId());
 }
