@@ -4,6 +4,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Repository\DefaultRepositoryFactory;
 use Doctrine\ORM\Tools\Setup;
+use ParkStreet\Console\Command\DropAndCreateDatabaseCommand;
 use ParkStreet\Console\Command\ImportCommand;
 use ParkStreet\Import;
 use ParkStreet\Model\Unit;
@@ -32,6 +33,13 @@ $container['doctrine.object_manager'] = (function (Container $c) {
     return EntityManager::create($c['database_params'], $c['doctrine.config.annotations']);
 });
 
+$container['doctrine.connection'] = (function (Container $c) {
+    /** @var EntityManager $entityManager */
+    $entityManager = $c['doctrine.object_manager'];
+
+    return $entityManager->getConnection();
+});
+
 $container['doctrine.repository_factory'] = (function () {
     return new DefaultRepositoryFactory();
 });
@@ -58,9 +66,15 @@ $container['command.import'] = (function () {
     return new ImportCommand();
 });
 
+$container['command.drop_and_create_database'] = (function () {
+    return new DropAndCreateDatabaseCommand();
+});
+
+
 $container['commands'] = (function (Container $c) {
     return [
         $c['command.import'],
+        $c['command.drop_and_create_database'],
     ];
 });
 

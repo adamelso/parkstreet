@@ -2,6 +2,7 @@
 
 namespace ParkStreet\Console\Command;
 
+use Doctrine\DBAL\Connection;
 use ParkStreet\Console\Command;
 use ParkStreet\Import;
 use Symfony\Component\Console\Input\InputInterface;

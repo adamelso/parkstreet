@@ -45,6 +45,10 @@ class Import
         $feedData = $this->feed->process($stream);
 
         foreach ($feedData as $unitData) {
+            if ($this->objectManager->getRepository(Unit::class)->findOneBy(['unitId' => $unitData['unit_id']])) {
+                continue;
+            }
+
             $unit = new Unit($unitData['unit_id']);
 
             $downloadMetrics   = $this->metricPipeline->generate($unitData['metrics']['download'], Metric::DOWNLOAD);
@@ -91,6 +95,9 @@ class Import
                     $this->objectManager->flush();
                 }
             }
+
+            $this->objectManager->persist($unit);
+            $this->objectManager->flush();
 
             yield $unit;
         }

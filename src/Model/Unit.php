@@ -28,7 +28,7 @@ class Unit
      *
      * @var int
      *
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", name="unit_id")
      */
     private $unitId;
 
