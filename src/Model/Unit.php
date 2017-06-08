@@ -65,7 +65,7 @@ class Unit
     }
 
     /**
-     * @return Metric[]
+     * @return Metric[]|Collection
      */
     public function getMetrics()
     {
@@ -79,5 +79,45 @@ class Unit
     {
         $metric->setUnit($this);
         $this->metrics[] = $metric;
+    }
+
+    /**
+     * @return Metric[]|Collection
+     */
+    public function getDownloadMetrics()
+    {
+        return $this->metrics->filter(function (Metric $metric) {
+            return $metric->isDownload();
+        });
+    }
+
+    /**
+     * @return Metric[]|Collection
+     */
+    public function getUploadMetrics()
+    {
+        return $this->metrics->filter(function (Metric $metric) {
+            return $metric->isUpload();
+        });
+    }
+
+    /**
+     * @return Metric[]|Collection
+     */
+    public function getLatencyMetrics()
+    {
+        return $this->metrics->filter(function (Metric $metric) {
+            return $metric->isLatency();
+        });
+    }
+
+    /**
+     * @return Metric[]|Collection
+     */
+    public function getPacketLossMetrics()
+    {
+        return $this->metrics->filter(function (Metric $metric) {
+            return $metric->isPacketLoss();
+        });
     }
 }

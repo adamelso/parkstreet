@@ -155,4 +155,36 @@ class Metric
     {
         $this->unit = $unit;
     }
+
+    /**
+     * @return bool
+     */
+    public function isDownload(): bool
+    {
+        return self::DOWNLOAD === $this->type;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUpload(): bool
+    {
+        return self::UPLOAD === $this->type;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLatency(): bool
+    {
+        return self::LATENCY === $this->type;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPacketLoss(): bool
+    {
+        return self::PACKET_LOSS === $this->type;
+    }
 }

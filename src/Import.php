@@ -17,10 +17,12 @@ class Import
      * @var Feed
      */
     private $feed;
+
     /**
      * @var MetricPipeline
      */
     private $metricPipeline;
+
     /**
      * @var ObjectManager
      */

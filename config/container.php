@@ -1,9 +1,11 @@
 <?php
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Repository\DefaultRepositoryFactory;
 use Doctrine\ORM\Tools\Setup;
+use ParkStreet\Console\Command\AggregateCommand;
 use ParkStreet\Console\Command\DropAndCreateDatabaseCommand;
 use ParkStreet\Console\Command\ImportCommand;
 use ParkStreet\Import;
@@ -26,7 +28,7 @@ $container['database_params'] = [
 $container['doctrine.config.annotations'] = (function (Container $c) {
     AnnotationRegistry::registerFile(__DIR__."/../vendor/doctrine/orm/lib/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php");
 
-    return Setup::createAnnotationMetadataConfiguration([__DIR__. '/../src/Model'], $c['debug'], null, null, false);
+    return Setup::createAnnotationMetadataConfiguration([__DIR__. '/../src/Model'], $c['debug'], null, new ArrayCache(), false);
 });
 
 $container['doctrine.object_manager'] = (function (Container $c) {
@@ -62,19 +64,24 @@ $container['import'] = (function (Container $c) {
     );
 });
 
+$container['command.drop_and_create_database'] = (function () {
+    return new DropAndCreateDatabaseCommand();
+});
+
 $container['command.import'] = (function () {
     return new ImportCommand();
 });
 
-$container['command.drop_and_create_database'] = (function () {
-    return new DropAndCreateDatabaseCommand();
+$container['command.aggregate'] = (function () {
+    return new AggregateCommand();
 });
 
 
 $container['commands'] = (function (Container $c) {
     return [
-        $c['command.import'],
         $c['command.drop_and_create_database'],
+        $c['command.import'],
+        $c['command.aggregate'],
     ];
 });
 
