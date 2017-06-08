@@ -8,7 +8,9 @@ use Doctrine\ORM\Tools\Setup;
 use ParkStreet\Console\Command\AggregateCommand;
 use ParkStreet\Console\Command\DropAndCreateDatabaseCommand;
 use ParkStreet\Console\Command\ImportCommand;
+use ParkStreet\Exception\ServiceNotFound;
 use ParkStreet\Import;
+use ParkStreet\Model\Metric;
 use ParkStreet\Model\Unit;
 use Pimple\Container;
 use Psr\Container\ContainerInterface;
@@ -53,6 +55,12 @@ $container['repository.unit'] = (function (Container $c) {
     return $factory->getRepository($c['doctrine.object_manager'], Unit::class);
 });
 
+$container['repository.metric'] = (function (Container $c) {
+    /** @var DefaultRepositoryFactory $factory */
+    $factory = $c['doctrine.repository_factory'];
+
+    return $factory->getRepository($c['doctrine.object_manager'], Metric::class);
+});
 
 $container['import'] = (function (Container $c) {
     // Set other collaborators as services.
@@ -116,7 +124,7 @@ return new class ($container) implements ContainerInterface {
             return $this->container[$id];
         }
 
-        throw new class ("Service '{$id}' not found") implements NotFoundExceptionInterface {};
+        throw new ServiceNotFound("The service '{$id}' does not exist.");
     }
 
     /**

@@ -2,10 +2,8 @@
 
 namespace ParkStreet\Aggregation;
 
-use Doctrine\Common\Collections\Collection;
 use MathPHP\Statistics\Average;
 use ParkStreet\Aggregation;
-use ParkStreet\Model\Metric;
 
 class MathPhpAggregation implements Aggregation
 {
@@ -15,16 +13,10 @@ class MathPhpAggregation implements Aggregation
     private $data;
 
     /**
-     * @param Metric[] $metrics
+     * @param int[]|float[] $data
      */
-    public function __construct($metrics)
+    public function __construct(array $data)
     {
-        $metrics = $metrics instanceof Collection ? $metrics->toArray() : $metrics;
-
-        $data = array_map(function (Metric $metric) {
-            return $metric->getValue();
-        }, $metrics);
-
         $this->data = $data;
     }
 

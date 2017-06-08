@@ -5,8 +5,15 @@ namespace ParkStreet\Model;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
- * @ORM\Table(name="metric")
+ * @ORM\Entity(repositoryClass="ParkStreet\Repository\MetricRepository"))
+ *
+ * @ORM\Table(
+ *     name="metric",
+ *     indexes={
+ *         @ORM\Index(name="metrics_by_hour_index", columns={"type", "hour"})
+ *     }
+ * )
+ *
  */
 class Metric
 {

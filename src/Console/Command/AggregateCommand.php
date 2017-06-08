@@ -1,26 +1,16 @@
 <?php
-/**
- * @author    Adam Elsodaney <adam.elsodaney@reiss.com>
- * @date      2017-06-08
- * @copyright Copyright (c) Reiss Clothing Ltd.
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 
 namespace ParkStreet\Console\Command;
 
-
-use Doctrine\Common\Persistence\ObjectRepository;
-use ParkStreet\Aggregation\MathPhpAggregation;
+use Doctrine\Common\Util\Debug;
 use ParkStreet\Console\Command;
 use ParkStreet\Model\Metric;
 use ParkStreet\Model\Unit;
 use ParkStreet\Report;
-use Symfony\Component\Console\Helper\Table;
+use ParkStreet\Repository\MetricRepository;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -31,28 +21,27 @@ class AggregateCommand extends Command
         $this->setName('aggregate');
 
         $this->addArgument('metric', InputArgument::REQUIRED);
-        $this->addArgument('unit', InputArgument::OPTIONAL, 'Unit ID', null);
+        $this->addArgument('hour', InputArgument::REQUIRED);
+        $this->addOption('unit', 'u', InputArgument::OPTIONAL, 'Unit ID', null);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $metricType = $this->getMetricType($input->getArgument('metric'));
-        $unitId = $input->getArgument('unit');
+        $metricTypeCode = $this->getMetricTypeCode($input->getArgument('metric'));
+        $hour = $input->getArgument('hour');
+        $unitId = $input->getOption('unit');
 
-        /** @var ObjectRepository $unitRepository */
-        $unitRepository = $this->getContainer()->get('repository.unit');
+        /** @var MetricRepository $metricRepository */
+        $metricRepository = $this->getContainer()->get('repository.metric');
 
-        if (null === $unitId) {
-            /** @var Unit[] $units */
-            $units = $unitRepository->findAll();
+
+        if ($unitId) {
+            $metrics = $metricRepository->selectUnitDataPointsByHour($unitId, $metricTypeCode, $hour);
+            $report = new Report\MetricsReport([$unitId => $metrics], $metricTypeCode);
         } else {
-            /** @var Unit[] $units */
-            $units = $unitRepository->findBy(['unitId' => $unitId]);
+            $metricsByUnit = $metricRepository->selectAllUnitsDataPointsByHour($metricTypeCode, $hour);
+            $report = new Report\MetricsReport($metricsByUnit, $metricTypeCode);
         }
-
-        // @todo when count($units) === 0
-
-        $report = new Report\MetricsReport($units, $metricType);
 
         $io = new SymfonyStyle($input, $output);
 
@@ -72,17 +61,20 @@ class AggregateCommand extends Command
      *
      * @throws \RuntimeException if metric type is unrecognized.
      */
-    private function getMetricType(string $metricType)
+    private function getMetricTypeCode(string $metricType)
     {
-        if (in_array($metricType, $map = [
-            'download',
-            'upload',
-            'latency',
-            'packet_loss'
-        ])) {
-            return $metricType;
+        $map = [
+            'download'    => Metric::DOWNLOAD,
+            'upload'      => Metric::UPLOAD,
+            'latency'     => Metric::LATENCY,
+            'packet_loss' => Metric::PACKET_LOSS,
+        ];
+
+        if (isset($map[$metricType])) {
+            return $map[$metricType];
         }
 
         throw new \RuntimeException('Metric type must be one of: ' . implode(', ', array_keys($map)));
     }
+
 }
