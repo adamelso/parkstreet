@@ -6,8 +6,6 @@ use ParkStreet\Console\Command;
 use ParkStreet\ImportRunner;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Stopwatch\Stopwatch;
-use Symfony\Component\Stopwatch\StopwatchEvent;
 
 class ImportCommand extends Command
 {
@@ -20,10 +18,6 @@ class ImportCommand extends Command
     {
         /** @var ImportRunner $import */
         $import = $this->getContainer()->get('import');
-
-        $stopwatch = new Stopwatch();
-
-        $stopwatch->start('import');
 
         $n = 0;
 
