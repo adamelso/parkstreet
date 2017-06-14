@@ -28,40 +28,14 @@ class ImportCommand extends Command
         $n = 0;
 
         foreach ($import->run() as $unit) {
-            $stopwatchEvent = $stopwatch->lap('import');
-
-            $output->writeln(sprintf(
-                ' Unit %d was imported | %s | %s',
-                $unit->getUnitId(),
-                $this->formatDuration($stopwatchEvent),
-                $this->formatMemory($stopwatchEvent)
-            ));
-
             ++$n;
         }
 
         $output->writeln(0 === $n
             ? '<comment>Nothing to import.</comment>'
-            : sprintf('<info>Imported %d items.</info>', $n)
+            : sprintf(' <info>Imported %d items.</info>', $n)
         );
 
         return 0;
-    }
-
-    /**
-     * @param StopwatchEvent $stopwatchEvent
-     * @return string
-     */
-    private function formatDuration(StopwatchEvent $stopwatchEvent)
-    {
-        return bcdiv($stopwatchEvent->getDuration(), 1000, 0) . ' secs';
-    }
-
-    private function formatMemory(StopwatchEvent $stopwatchEvent)
-    {
-        $memory = $stopwatchEvent->getMemory();
-        $power = (int) log($memory, 1024);
-
-        return $memory / 1024 ** $power.' '. ['B', 'KiB', 'MiB', 'GiB'][$power];
     }
 }

@@ -57,13 +57,16 @@ class ImportRunner
 
         $this->eventDispatcher->dispatch('import_start');
 
+        $counter = 0;
+
         foreach ($feedData as $unitData) {
             $unit = $this->findUnitOrCreateNew($unitData['unit_id']);
 
-            $counter = 0;
+            $metricCountForUnit = 0;
 
             foreach ($this->unitPipeline->generate($unitData['metrics']) as $metric) {
                 ++$counter;
+                ++$metricCountForUnit;
 
                 $unit->addMetric($metric);
                 $this->eventDispatcher->dispatch('metric_import');
@@ -73,7 +76,7 @@ class ImportRunner
                 }
             }
 
-            $this->eventDispatcher->dispatch(UnitImported::EVENT, new UnitImported($unit));
+            $this->eventDispatcher->dispatch(UnitImported::EVENT, new UnitImported($unit, $metricCountForUnit));
 
             yield $unit;
         }

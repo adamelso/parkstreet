@@ -13,10 +13,15 @@ class UnitImported extends Event
      * @var Unit
      */
     private $unit;
+    /**
+     * @var int
+     */
+    private $metricImportCount;
 
-    public function __construct(Unit $unit)
+    public function __construct(Unit $unit, int $metricImportCount)
     {
         $this->unit = $unit;
+        $this->metricImportCount = $metricImportCount;
     }
 
     /**
@@ -25,5 +30,13 @@ class UnitImported extends Event
     public function getUnit(): Unit
     {
         return $this->unit;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMetricImportCount(): int
+    {
+        return $this->metricImportCount;
     }
 }

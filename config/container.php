@@ -104,10 +104,12 @@ $container['subscriber.metric_import.batch'] = (function (Container $c) {
 });
 
 $container['subscriber.metric_import.console'] = (function (Container $c) {
+    $output = new ConsoleOutput();
+
     return new MetricImportConsoleSubscriber(
-        new ProgressBar(
-            new ConsoleOutput()
-        )
+        new ProgressBar($output),
+        $output,
+        new Symfony\Component\Stopwatch\Stopwatch()
     );
 });
 

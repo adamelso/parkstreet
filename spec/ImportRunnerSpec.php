@@ -117,8 +117,8 @@ class ImportRunnerSpec extends ObjectBehavior
         $eventDispatcher->dispatch('metric_import')->shouldBeCalledTimes(8);
         $eventDispatcher->dispatch('import_batch_complete', new BatchImported($unit1->getWrappedObject()))->shouldBeCalled();
         $eventDispatcher->dispatch('import_batch_complete', new BatchImported($unit2->getWrappedObject()))->shouldBeCalled();
-        $eventDispatcher->dispatch('import_unit_complete', new UnitImported($unit1->getWrappedObject()))->shouldBeCalled();
-        $eventDispatcher->dispatch('import_unit_complete', new UnitImported($unit2->getWrappedObject()))->shouldBeCalled();
+        $eventDispatcher->dispatch('import_unit_complete', new UnitImported($unit1->getWrappedObject(), 4))->shouldBeCalled();
+        $eventDispatcher->dispatch('import_unit_complete', new UnitImported($unit2->getWrappedObject(), 4))->shouldBeCalled();
         $eventDispatcher->dispatch('import_complete')->shouldBeCalled();
 
         $this->run(3)->shouldGenerate([$unit1, $unit2]);
