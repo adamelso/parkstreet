@@ -5,8 +5,14 @@ install:
 	@echo "--> Installing dependencies"
 	composer install -o
 
-	# mysqladmin -u$USER -p$PASSWORD create $DB_NAME
-	# bin/doctrine orm:schema-tool:create
+	@echo "--> Creating database"
+	./bin/parkstreet db:recreate
+
+	@echo "--> Creating schema"
+	./bin/doctrine orm:schema-tool:create
+
+	@echo "--> Running import from local source"
+	./bin/parkstreet import
 
 	@echo "--> Success"
 
@@ -25,7 +31,10 @@ clean-install:
 
 	@echo "--> Success"
 
-reset:
+reload:
 	./bin/parkstreet db:recreate
 	./bin/doctrine orm:schema-tool:create
 	./bin/parkstreet import
+
+test:
+	./bin/phpspec run -fpretty

@@ -62,6 +62,12 @@ class ImportRunner
         foreach ($feedData as $unitData) {
             $unit = $this->findUnitOrCreateNew($unitData['unit_id']);
 
+            // @todo To ensure duplicate data isn't imported, we may need to set a unique constraint for the metric table.
+            // Until then, ignore.
+            if (! $unit) {
+                continue;
+            }
+
             $metricCountForUnit = 0;
 
             foreach ($this->unitPipeline->generate($unitData['metrics']) as $metric) {
@@ -85,6 +91,14 @@ class ImportRunner
     }
 
     /**
+     * @param Client $client
+     */
+    public function setClient(Client $client)
+    {
+        $this->client = $client;
+    }
+
+    /**
      * @param int $unitData
      *
      * @return null|Unit
@@ -94,9 +108,10 @@ class ImportRunner
         $unit = $this->unitRepository->findOneBy(['unitId' => $unitId]);
 
         if (! $unit) {
-            $unit = new Unit($unitId);
+            return new Unit($unitId);
         }
 
-        return $unit;
+        // @todo Return $unit if dups can be prevented.
+        return null;
     }
 }

@@ -5,25 +5,34 @@ use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Repository\DefaultRepositoryFactory;
 use Doctrine\ORM\Tools\Setup;
+use ParkStreet\Client\LiveClient;
+use ParkStreet\Client\OfflineClient;
 use ParkStreet\Console\Command\AggregateCommand;
 use ParkStreet\Console\Command\DropAndCreateDatabaseCommand;
 use ParkStreet\Console\Command\ImportCommand;
 use ParkStreet\Exception\ServiceNotFound;
+use ParkStreet\Feed\JsonFeed;
 use ParkStreet\ImportRunner;
 use ParkStreet\Listener\MetricImportBatchSubscriber;
 use ParkStreet\Listener\MetricImportConsoleSubscriber;
 use ParkStreet\Model\Metric;
 use ParkStreet\Model\Unit;
+use ParkStreet\Pipeline\MetricPipeline;
+use ParkStreet\Pipeline\UnitPipeline;
 use Pimple\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 $container = new Container();
 
 $container['debug'] = false;
+
+$container['data_feed.offline'] = __DIR__.'/../testdata.json';
+$container['data_feed.live']    = 'http://tech-test.sandbox.samknows.com/php-2.0/testdata.json';
 
 $container['database_params'] = [
     'driver'   => 'pdo_mysql',
@@ -67,12 +76,20 @@ $container['repository.metric'] = (function (Container $c) {
     return $factory->getRepository($c['doctrine.object_manager'], Metric::class);
 });
 
+$container['client.offline'] = (function (Container $c) {
+    return new OfflineClient($c['data_feed.live']);
+});
+$container['client.live'] = (function (Container $c) {
+    return new LiveClient($c['data_feed.live']);
+});
+
+
 $container['import'] = (function (Container $c) {
     // Set other collaborators as services.
     return new ImportRunner(
-        new \ParkStreet\Client\OfflineClient(),
-        new \ParkStreet\Feed\JsonFeed(),
-        new \ParkStreet\Pipeline\UnitPipeline(new \ParkStreet\Pipeline\MetricPipeline()),
+        $c['client.offline'],
+        new JsonFeed(),
+        new UnitPipeline(new MetricPipeline()),
         $c['repository.unit'],
         $c['event_dispatcher']
     );
@@ -109,7 +126,7 @@ $container['subscriber.metric_import.console'] = (function (Container $c) {
     return new MetricImportConsoleSubscriber(
         new ProgressBar($output),
         $output,
-        new Symfony\Component\Stopwatch\Stopwatch()
+        new Stopwatch()
     );
 });
 

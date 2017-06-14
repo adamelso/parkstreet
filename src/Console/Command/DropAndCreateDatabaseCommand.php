@@ -3,6 +3,8 @@
 namespace ParkStreet\Console\Command;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\PDOException;
+use Doctrine\DBAL\DriverManager;
 use ParkStreet\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,14 +18,19 @@ class DropAndCreateDatabaseCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var Connection $connection */
-        $connection = $this->getContainer()->get('doctrine.connection');
+        $params = $this->getContainer()->get('database_params');
+        $dbname = $params['dbname'];
+        unset($params['dbname']);
+        $tmpConnection = DriverManager::getConnection($params);
 
-        $dbname = $this->getContainer()->get('database_params')['dbname'];
+        try {
+            $tmpConnection->getSchemaManager()->dropAndCreateDatabase($dbname);
+            $output->writeln("Database '{$dbname}' was re-created. Please run `bin/doctrine orm:schema-tool:create` to re-create the schema.");
 
-        $connection->getSchemaManager()->dropAndCreateDatabase($dbname);
-
-        $output->writeln("Database '{$dbname}' was recreated. Please run `bin/doctrine orm:schema-tool:create` to recreate the schema.");
+        } catch (PDOException $e) {
+            $tmpConnection->getSchemaManager()->createDatabase($dbname);
+            $output->writeln("Database '{$dbname}' was created. Please run `bin/doctrine orm:schema-tool:create` to create the schema.");
+        }
 
         return 0;
     }
