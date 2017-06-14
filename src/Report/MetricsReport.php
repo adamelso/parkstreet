@@ -103,7 +103,7 @@ class MetricsReport implements Report
         return $rows;
     }
 
-    public function getTableHeaders()
+    public function getTableHeaders(): array
     {
         return ['Unit Id', 'Minimum', 'Maximum', 'Mean', 'Median'];
     }

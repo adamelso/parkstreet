@@ -165,3 +165,25 @@ Represents a report table that can be rendered later to the appropriate format.
 
     $report = MetricsReport::forSingleUnit(3, 23, [...], Metric::DOWNLOAD);
     $report = MetricsReport::forMultipleUnits(23, [...], Metric::DOWNLOAD);
+
+    return new Response($this-twig->render('report.html.twig', ['report' => $report]));
+
+This format could be console output, or HTML, or something else.
+
+```
+<h1>{{ report.title }}</h1>
+<table>
+<tr>
+      {%- for header in report.tableHeaders %}
+          <th>{{ header }}
+      {% endfor -%}
+</tr>
+{% for row in report.tableRows %}
+    <tr>
+      {%- for cell in row %}
+          <td>{{ cell }}
+      {% endfor -%}
+    </tr>
+{% endfor %}
+</table>
+```
