@@ -28,20 +28,21 @@ class ImportRunner
     private $unitPipeline;
 
     /**
-     * @var ObjectRepository
+     * @var UnitProvider
      */
-    private $unitRepository;
+    private $unitProvider;
+
     /**
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
 
-    public function __construct(Client $client, Feed $feed, UnitPipeline $unitPipeline, ObjectRepository $unitRepository, EventDispatcherInterface $eventDispatcher)
+    public function __construct(Client $client, Feed $feed, UnitPipeline $unitPipeline, UnitProvider $unitProvider, EventDispatcherInterface $eventDispatcher)
     {
         $this->client = $client;
         $this->feed = $feed;
         $this->unitPipeline = $unitPipeline;
-        $this->unitRepository = $unitRepository;
+        $this->unitProvider = $unitProvider;
         $this->eventDispatcher = $eventDispatcher;
     }
 
@@ -60,7 +61,7 @@ class ImportRunner
         $counter = 0;
 
         foreach ($feedData as $unitData) {
-            $unit = $this->findUnitOrCreateNew($unitData['unit_id']);
+            $unit = $this->unitProvider->createIfNotExist($unitData['unit_id']);
 
             // @todo To ensure duplicate data isn't imported, we may need to set a unique constraint for the metric table.
             // Until then, ignore.
@@ -98,20 +99,4 @@ class ImportRunner
         $this->client = $client;
     }
 
-    /**
-     * @param int $unitData
-     *
-     * @return null|Unit
-     */
-    private function findUnitOrCreateNew($unitId)
-    {
-        $unit = $this->unitRepository->findOneBy(['unitId' => $unitId]);
-
-        if (! $unit) {
-            return new Unit($unitId);
-        }
-
-        // @todo Return $unit if dups can be prevented.
-        return null;
-    }
 }

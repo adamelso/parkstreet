@@ -9,6 +9,7 @@ Quick Start
 
     $ git clone git@github.com:adamelso/parkstreet.git 
     $ cd parkstreet
+    $ vim config/database.php
     $ make install
     $ make test
 

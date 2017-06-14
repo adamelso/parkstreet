@@ -11,6 +11,7 @@ use ParkStreet\ImportRunner;
 use ParkStreet\Model\Metric;
 use ParkStreet\Model\Unit;
 use ParkStreet\Pipeline\UnitPipeline;
+use ParkStreet\UnitProvider;
 use PhpSpec\Exception\Example\FailureException;
 use PhpSpec\ObjectBehavior;
 use Psr\Http\Message\StreamInterface;
@@ -18,9 +19,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ImportRunnerSpec extends ObjectBehavior
 {
-    function let(Client $client, Feed $feed, UnitPipeline $unitPipeline, ObjectRepository $unitRepository, EventDispatcherInterface $eventDispatcher)
+    function let(Client $client, Feed $feed, UnitPipeline $unitPipeline, UnitProvider $unitProvider, EventDispatcherInterface $eventDispatcher)
     {
-        $this->beConstructedWith($client, $feed, $unitPipeline, $unitRepository, $eventDispatcher);
+        $this->beConstructedWith($client, $feed, $unitPipeline, $unitProvider, $eventDispatcher);
     }
 
     function it_is_initializable()
@@ -28,7 +29,7 @@ class ImportRunnerSpec extends ObjectBehavior
         $this->shouldHaveType(ImportRunner::class);
     }
 
-    function it_imports_the_feed_into_existing_units(Client $client, Feed $feed, EventDispatcherInterface $eventDispatcher, UnitPipeline $unitPipeline, ObjectRepository $unitRepository, StreamInterface $stream, Unit $unit1, Unit $unit2, Metric $unit1Download, Metric $unit1Upload, Metric $unit1Latency, Metric $unit1PacketLoss, Metric $unit2Download, Metric $unit2Upload,  Metric $unit2Latency, Metric $unit2PacketLoss)
+    function it_imports_the_feed_into_existing_units(Client $client, Feed $feed, EventDispatcherInterface $eventDispatcher, UnitPipeline $unitPipeline, UnitProvider $unitProvider, StreamInterface $stream, Unit $unit1, Unit $unit2, Metric $unit1Download, Metric $unit1Upload, Metric $unit1Latency, Metric $unit1PacketLoss, Metric $unit2Download, Metric $unit2Upload,  Metric $unit2Latency, Metric $unit2PacketLoss)
     {
         $client->connect()->willReturn($stream);
         $feed->process($stream)->willReturn([
@@ -68,9 +69,8 @@ class ImportRunnerSpec extends ObjectBehavior
             ]
         ]);
 
-
-        $unitRepository->findOneBy(['unitId' => 1])->willReturn($unit1);
-        $unitRepository->findOneBy(['unitId' => 2])->willReturn($unit2);
+        $unitProvider->createIfNotExist(1)->willReturn($unit1);
+        $unitProvider->createIfNotExist(2)->willReturn($unit2);
 
         $unitPipeline->generate([
             'download' => [

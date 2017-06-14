@@ -19,6 +19,7 @@ use ParkStreet\Model\Metric;
 use ParkStreet\Model\Unit;
 use ParkStreet\Pipeline\MetricPipeline;
 use ParkStreet\Pipeline\UnitPipeline;
+use ParkStreet\UnitProvider;
 use Pimple\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -27,6 +28,12 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Stopwatch\Stopwatch;
 
+$dbparams = require __DIR__.'/database.php';
+
+/**
+ * @todo Never use Pimple again... yuck. At least it's still better than League\Container ;P
+ */
+
 $container = new Container();
 
 $container['debug'] = false;
@@ -34,12 +41,7 @@ $container['debug'] = false;
 $container['data_feed.offline'] = __DIR__.'/../testdata.json';
 $container['data_feed.live']    = 'http://tech-test.sandbox.samknows.com/php-2.0/testdata.json';
 
-$container['database_params'] = [
-    'driver'   => 'pdo_mysql',
-    'user'     => 'root',
-    'password' => '',
-    'dbname'   => 'park_street',
-];
+$container['database_params'] = $dbparams;
 
 $container['doctrine.config.annotations'] = (function (Container $c) {
     AnnotationRegistry::registerFile(__DIR__."/../vendor/doctrine/orm/lib/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php");
@@ -90,7 +92,7 @@ $container['import'] = (function (Container $c) {
         $c['client.offline'],
         new JsonFeed(),
         new UnitPipeline(new MetricPipeline()),
-        $c['repository.unit'],
+        new UnitProvider($c['repository.unit']),
         $c['event_dispatcher']
     );
 });
