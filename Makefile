@@ -24,3 +24,8 @@ clean-install:
 	composer install -o
 
 	@echo "--> Success"
+
+reset:
+	./bin/parkstreet db:recreate
+	./bin/doctrine orm:schema-tool:create
+	./bin/parkstreet import

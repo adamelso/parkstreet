@@ -7,12 +7,12 @@ interface Aggregation
     /**
      * @return int
      */
-    public function min(): int;
+    public function minimum(): int;
 
     /**
      * @return int
      */
-    public function max(): int;
+    public function maximum(): int;
 
     /**
      * @return int

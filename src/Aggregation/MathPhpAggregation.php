@@ -23,7 +23,7 @@ class MathPhpAggregation implements Aggregation
     /**
      * @return int
      */
-    public function max(): int
+    public function maximum(): int
     {
         return (int) max($this->data);
     }
@@ -31,7 +31,7 @@ class MathPhpAggregation implements Aggregation
     /**
      * @return int
      */
-    public function min(): int
+    public function minimum(): int
     {
         return (int) min($this->data);
     }
@@ -41,7 +41,7 @@ class MathPhpAggregation implements Aggregation
      */
     public function mean(): int
     {
-        return (int) round(Average::mean($this->data), 0);
+        return (int) round(Average::mean($this->data));
     }
 
     /**

@@ -1,15 +1,6 @@
 <?php
-/**
- * @author    Adam Elsodaney <adam.elsodaney@reiss.com>
- * @date      2017-06-01
- * @copyright Copyright (c) Reiss Clothing Ltd.
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
-
-namespace ParkStreet;
+namespace ParkStreet\Pipeline;
 
 use ParkStreet\Model\Metric;
 

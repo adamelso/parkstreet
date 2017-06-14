@@ -8,6 +8,7 @@ use ParkStreet\Model\Metric;
 use ParkStreet\Model\Unit;
 use ParkStreet\Report;
 use ParkStreet\Repository\MetricRepository;
+use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -31,23 +32,29 @@ class AggregateCommand extends Command
         $hour = $input->getArgument('hour');
         $unitId = $input->getOption('unit');
 
+        if ($hour > 23) {
+            $output->writeln('<error>Hour must be within 0 and 23</error>');
+
+            return 1;
+        }
+
         /** @var MetricRepository $metricRepository */
         $metricRepository = $this->getContainer()->get('repository.metric');
 
-
         if ($unitId) {
             $metrics = $metricRepository->selectUnitDataPointsByHour($unitId, $metricTypeCode, $hour);
-            $report = new Report\MetricsReport([$unitId => $metrics], $metricTypeCode);
+            $report = Report\MetricsReport::forSingleUnit($unitId, $hour, $metrics, $metricTypeCode);
         } else {
             $metricsByUnit = $metricRepository->selectAllUnitsDataPointsByHour($metricTypeCode, $hour);
-            $report = new Report\MetricsReport($metricsByUnit, $metricTypeCode);
+            $report = Report\MetricsReport::forMultipleUnits($hour, $metricsByUnit, $metricTypeCode);
         }
 
         $io = new SymfonyStyle($input, $output);
-
-        $io->title($report->getTitle());
         $io->table(
-            ['Unit ID', 'Min', 'Max', 'Mean', 'Median'],
+            [
+                [new TableCell($report->getTitle(), ['colspan' => count($report->getTableHeaders())])],
+                $report->getTableHeaders(),
+            ],
             $report->getTableRows()
         );
 
@@ -76,5 +83,4 @@ class AggregateCommand extends Command
 
         throw new \RuntimeException('Metric type must be one of: ' . implode(', ', array_keys($map)));
     }
-
 }

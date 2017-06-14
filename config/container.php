@@ -9,12 +9,17 @@ use ParkStreet\Console\Command\AggregateCommand;
 use ParkStreet\Console\Command\DropAndCreateDatabaseCommand;
 use ParkStreet\Console\Command\ImportCommand;
 use ParkStreet\Exception\ServiceNotFound;
-use ParkStreet\Import;
+use ParkStreet\ImportRunner;
+use ParkStreet\Listener\MetricImportBatchSubscriber;
+use ParkStreet\Listener\MetricImportConsoleSubscriber;
 use ParkStreet\Model\Metric;
 use ParkStreet\Model\Unit;
 use Pimple\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 $container = new Container();
 
@@ -64,11 +69,12 @@ $container['repository.metric'] = (function (Container $c) {
 
 $container['import'] = (function (Container $c) {
     // Set other collaborators as services.
-    return new Import(
+    return new ImportRunner(
         new \ParkStreet\Client\OfflineClient(),
         new \ParkStreet\Feed\JsonFeed(),
-        new \ParkStreet\MetricPipeline(),
-        $c['doctrine.object_manager']
+        new \ParkStreet\Pipeline\UnitPipeline(new \ParkStreet\Pipeline\MetricPipeline()),
+        $c['repository.unit'],
+        $c['event_dispatcher']
     );
 });
 
@@ -92,6 +98,32 @@ $container['commands'] = (function (Container $c) {
         $c['command.aggregate'],
     ];
 });
+
+$container['subscriber.metric_import.batch'] = (function (Container $c) {
+    return new MetricImportBatchSubscriber($c['doctrine.object_manager']);
+});
+
+$container['subscriber.metric_import.console'] = (function (Container $c) {
+    return new MetricImportConsoleSubscriber(
+        new ProgressBar(
+            new ConsoleOutput()
+        )
+    );
+});
+
+
+$container['event_dispatcher'] = (function (Container $c) {
+    $dispatcher = new EventDispatcher();
+
+    $dispatcher->addSubscriber($c['subscriber.metric_import.batch']);
+
+    if ('cli' === php_sapi_name()) {
+        $dispatcher->addSubscriber($c['subscriber.metric_import.console']);
+    }
+
+    return $dispatcher;
+});
+
 
 
 // Pimple is not yet PSR-11 compliant because of method name collision in Silex, so this
